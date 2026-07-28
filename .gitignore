@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+*.egg-info/
+
+# Entornos y secretos
+.env
+backend/.env
+
+# Node / React
+node_modules/
+frontend/dist/
+frontend/build/
+
+# Documentos subidos (archivos de prueba)
+backend/uploads/
+
+# Docker
+*.log
+
+# VS Code
+.vscode/
+
+# Alembic (dejamos las migraciones, pero ignoramos cachés si los hay)
+__pycache__/
