@@ -16,3 +16,7 @@ class Document(Base):
     status = Column(String, nullable=False, default="recibido")
     uploaded_by = Column(String, nullable=False)
     uploaded_at = Column(DateTime, default=datetime.utcnow)
+
+    reviewed_by = Column(String, nullable=True)
+    reviewed_at = Column(DateTime, nullable=True)
+    review_comment = Column(String, nullable=True)

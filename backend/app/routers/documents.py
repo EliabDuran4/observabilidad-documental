@@ -4,16 +4,23 @@ from datetime import datetime
 
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
+from typing import Optional
 
 from app.config import settings
 from app.core.security import get_current_user
 from app.core.database import get_db
 from app.core.logging_config import logger
+from app.core.document_states import DocumentStatus
 from app.models.document import Document
 
 router = APIRouter()
 
 os.makedirs(settings.upload_dir, exist_ok=True)
+
+
+class ReviewRequest(BaseModel):
+    comment: Optional[str] = None
 
 
 @router.post("/upload")
@@ -51,7 +58,7 @@ async def upload_document(
         id=document_id,
         original_filename=file.filename,
         stored_path=saved_path,
-        status="recibido",
+        status=DocumentStatus.RECIBIDO,
         uploaded_by=current_user["username"],
         uploaded_at=datetime.utcnow(),
     )
@@ -70,16 +77,7 @@ async def upload_document(
         }},
     )
 
-    return {
-        "message": "Documento cargado exitosamente",
-        "document": {
-            "id": str(new_document.id),
-            "original_filename": new_document.original_filename,
-            "status": new_document.status,
-            "uploaded_by": new_document.uploaded_by,
-            "uploaded_at": new_document.uploaded_at.isoformat(),
-        },
-    }
+    return _serialize_document(new_document)
 
 
 @router.get("/")
@@ -87,7 +85,7 @@ def list_documents(
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    documents = db.query(Document).all()
+    documents = db.query(Document).order_by(Document.uploaded_at.desc()).all()
 
     logger.info(
         "Consulta de listado de documentos",
@@ -100,16 +98,7 @@ def list_documents(
 
     return {
         "total": len(documents),
-        "documents": [
-            {
-                "id": str(doc.id),
-                "original_filename": doc.original_filename,
-                "status": doc.status,
-                "uploaded_by": doc.uploaded_by,
-                "uploaded_at": doc.uploaded_at.isoformat(),
-            }
-            for doc in documents
-        ],
+        "documents": [_serialize_document(doc) for doc in documents],
     }
 
 
@@ -119,6 +108,54 @@ def get_document(
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    document = _get_document_or_404(document_id, db, current_user)
+    return _serialize_document(document)
+
+
+@router.post("/{document_id}/start-review")
+def start_review(
+    document_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Transición: recibido -> en_revision"""
+    document = _get_document_or_404(document_id, db, current_user)
+    return _transition_status(
+        document, DocumentStatus.EN_REVISION, current_user, db
+    )
+
+
+@router.post("/{document_id}/approve")
+def approve_document(
+    document_id: str,
+    review: ReviewRequest,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Transición: en_revision -> aprobado"""
+    document = _get_document_or_404(document_id, db, current_user)
+    return _transition_status(
+        document, DocumentStatus.APROBADO, current_user, db, review.comment
+    )
+
+
+@router.post("/{document_id}/reject")
+def reject_document(
+    document_id: str,
+    review: ReviewRequest,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Transición: en_revision -> rechazado"""
+    document = _get_document_or_404(document_id, db, current_user)
+    return _transition_status(
+        document, DocumentStatus.RECHAZADO, current_user, db, review.comment
+    )
+
+
+# ------------------ Funciones auxiliares ------------------
+
+def _get_document_or_404(document_id: str, db: Session, current_user: dict) -> Document:
     document = db.query(Document).filter(Document.id == document_id).first()
     if not document:
         logger.warning(
@@ -130,20 +167,64 @@ def get_document(
             }},
         )
         raise HTTPException(status_code=404, detail="Documento no encontrado")
+    return document
+
+
+def _transition_status(
+    document: Document,
+    new_status: str,
+    current_user: dict,
+    db: Session,
+    comment: Optional[str] = None,
+) -> dict:
+    if not DocumentStatus.is_valid_transition(document.status, new_status):
+        logger.warning(
+            "Transición de estado inválida",
+            extra={"extra_data": {
+                "event": "invalid_status_transition",
+                "document_id": str(document.id),
+                "from_status": document.status,
+                "to_status": new_status,
+                "user": current_user["username"],
+            }},
+        )
+        raise HTTPException(
+            status_code=400,
+            detail=f"No se puede pasar de '{document.status}' a '{new_status}'",
+        )
+
+    previous_status = document.status
+    document.status = new_status
+    document.reviewed_by = current_user["username"]
+    document.reviewed_at = datetime.utcnow()
+    if comment:
+        document.review_comment = comment
+
+    db.commit()
+    db.refresh(document)
 
     logger.info(
-        "Consulta de documento individual",
+        "Estado de documento actualizado",
         extra={"extra_data": {
-            "event": "document_viewed",
-            "document_id": document_id,
+            "event": "document_status_changed",
+            "document_id": str(document.id),
+            "from_status": previous_status,
+            "to_status": new_status,
             "user": current_user["username"],
         }},
     )
 
+    return _serialize_document(document)
+
+
+def _serialize_document(document: Document) -> dict:
     return {
         "id": str(document.id),
         "original_filename": document.original_filename,
         "status": document.status,
         "uploaded_by": document.uploaded_by,
         "uploaded_at": document.uploaded_at.isoformat(),
+        "reviewed_by": document.reviewed_by,
+        "reviewed_at": document.reviewed_at.isoformat() if document.reviewed_at else None,
+        "review_comment": document.review_comment,
     }

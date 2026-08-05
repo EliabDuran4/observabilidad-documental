@@ -9,8 +9,8 @@ receivers:
 exporters:
   prometheus:
     endpoint: "0.0.0.0:8889"
-  loki:
-    endpoint: "http://loki:3100/loki/api/v1/push"
+  debug:
+    verbosity: detailed
 
 processors:
   batch:
@@ -21,11 +21,7 @@ service:
       receivers: [otlp]
       processors: [batch]
       exporters: [prometheus]
-    logs:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [loki]
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: []   # se configurará cuando conectemos Grafana Tempo o export directo
+      exporters: [debug]

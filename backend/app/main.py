@@ -4,6 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routers import documents, auth
 from app.config import settings
 from app.core.logging_config import logger
+from app.core.telemetry import setup_telemetry
+from app.core.database import engine
 
 app = FastAPI(title=settings.app_name)
 
@@ -14,6 +16,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Configurar OpenTelemetry (trazas)
+tracer = setup_telemetry(app, engine)
 
 app.include_router(auth.router, prefix="/auth", tags=["Autenticación"])
 app.include_router(documents.router, prefix="/documents", tags=["Documentos"])
@@ -31,5 +36,4 @@ def root():
 
 @app.get("/health")
 def health_check():
-    logger.info("Verificación de salud", extra={"extra_data": {"event": "health_check"}})
     return {"status": "healthy"}

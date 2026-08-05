@@ -1,7 +1,20 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { uploadDocument, listDocuments } from "../services/documentService";
+import {
+  uploadDocument,
+  listDocuments,
+  startReview,
+  approveDocument,
+  rejectDocument,
+} from "../services/documentService";
 import { logout } from "../services/authService";
+
+const STATUS_LABELS = {
+  recibido: { label: "Recibido", color: "#6b7280" },
+  en_revision: { label: "En revisión", color: "#d97706" },
+  aprobado: { label: "Aprobado", color: "#16a34a" },
+  rechazado: { label: "Rechazado", color: "#dc2626" },
+};
 
 function Documents() {
   const [documents, setDocuments] = useState([]);
@@ -36,11 +49,9 @@ function Documents() {
       setError("Selecciona un archivo primero");
       return;
     }
-
     setUploading(true);
     setError("");
     setMessage("");
-
     try {
       await uploadDocument(file);
       setMessage("Documento subido exitosamente");
@@ -51,6 +62,20 @@ function Documents() {
       setError("Error al subir el documento. Verifica el formato (.pdf, .docx, .doc)");
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleAction = async (action, documentId) => {
+    setError("");
+    setMessage("");
+    try {
+      if (action === "start-review") await startReview(documentId);
+      if (action === "approve") await approveDocument(documentId, "Aprobado desde interfaz");
+      if (action === "reject") await rejectDocument(documentId, "Rechazado desde interfaz");
+      setMessage("Estado actualizado correctamente");
+      fetchDocuments();
+    } catch (err) {
+      setError("No se pudo actualizar el estado del documento");
     }
   };
 
@@ -91,20 +116,52 @@ function Documents() {
                 <th style={styles.th}>Nombre</th>
                 <th style={styles.th}>Estado</th>
                 <th style={styles.th}>Subido por</th>
-                <th style={styles.th}>Fecha</th>
+                <th style={styles.th}>Revisado por</th>
+                <th style={styles.th}>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {documents.map((doc) => (
-                <tr key={doc.id}>
-                  <td style={styles.td}>{doc.original_filename}</td>
-                  <td style={styles.td}>{doc.status}</td>
-                  <td style={styles.td}>{doc.uploaded_by}</td>
-                  <td style={styles.td}>
-                    {new Date(doc.uploaded_at).toLocaleString()}
-                  </td>
-                </tr>
-              ))}
+              {documents.map((doc) => {
+                const statusInfo = STATUS_LABELS[doc.status] || { label: doc.status, color: "#000" };
+                return (
+                  <tr key={doc.id}>
+                    <td style={styles.td}>{doc.original_filename}</td>
+                    <td style={styles.td}>
+                      <span style={{ ...styles.badge, backgroundColor: statusInfo.color }}>
+                        {statusInfo.label}
+                      </span>
+                    </td>
+                    <td style={styles.td}>{doc.uploaded_by}</td>
+                    <td style={styles.td}>{doc.reviewed_by || "-"}</td>
+                    <td style={styles.td}>
+                      {doc.status === "recibido" && (
+                        <button
+                          style={styles.actionButton}
+                          onClick={() => handleAction("start-review", doc.id)}
+                        >
+                          Iniciar revisión
+                        </button>
+                      )}
+                      {doc.status === "en_revision" && (
+                        <>
+                          <button
+                            style={{ ...styles.actionButton, backgroundColor: "#16a34a" }}
+                            onClick={() => handleAction("approve", doc.id)}
+                          >
+                            Aprobar
+                          </button>
+                          <button
+                            style={{ ...styles.actionButton, backgroundColor: "#dc2626" }}
+                            onClick={() => handleAction("reject", doc.id)}
+                          >
+                            Rechazar
+                          </button>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
@@ -114,75 +171,21 @@ function Documents() {
 }
 
 const styles = {
-  container: {
-    maxWidth: "800px",
-    margin: "0 auto",
-    padding: "40px 20px",
-    fontFamily: "sans-serif",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "30px",
-  },
-  logoutButton: {
-    padding: "8px 16px",
-    backgroundColor: "#dc2626",
-    color: "#fff",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-  },
-  uploadSection: {
-    backgroundColor: "#f9fafb",
-    padding: "20px",
-    borderRadius: "8px",
-    marginBottom: "30px",
-  },
-  uploadForm: {
-    display: "flex",
-    gap: "10px",
-    alignItems: "center",
-  },
-  uploadButton: {
-    padding: "8px 16px",
-    backgroundColor: "#2563eb",
-    color: "#fff",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-  },
-  success: {
-    color: "#16a34a",
-    marginTop: "10px",
-  },
-  error: {
-    color: "#dc2626",
-    marginTop: "10px",
-  },
-  listSection: {
-    backgroundColor: "#fff",
-  },
-  empty: {
-    color: "#666",
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-  },
-  th: {
-    textAlign: "left",
-    padding: "10px",
-    borderBottom: "2px solid #e5e7eb",
-    fontSize: "13px",
-    color: "#374151",
-  },
-  td: {
-    padding: "10px",
-    borderBottom: "1px solid #e5e7eb",
-    fontSize: "14px",
-  },
+  container: { maxWidth: "900px", margin: "0 auto", padding: "40px 20px", fontFamily: "sans-serif" },
+  header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" },
+  logoutButton: { padding: "8px 16px", backgroundColor: "#dc2626", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer" },
+  uploadSection: { backgroundColor: "#f9fafb", padding: "20px", borderRadius: "8px", marginBottom: "30px" },
+  uploadForm: { display: "flex", gap: "10px", alignItems: "center" },
+  uploadButton: { padding: "8px 16px", backgroundColor: "#2563eb", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer" },
+  success: { color: "#16a34a", marginTop: "10px" },
+  error: { color: "#dc2626", marginTop: "10px" },
+  listSection: { backgroundColor: "#fff" },
+  empty: { color: "#666" },
+  table: { width: "100%", borderCollapse: "collapse" },
+  th: { textAlign: "left", padding: "10px", borderBottom: "2px solid #e5e7eb", fontSize: "13px", color: "#374151" },
+  td: { padding: "10px", borderBottom: "1px solid #e5e7eb", fontSize: "14px" },
+  badge: { color: "#fff", padding: "4px 10px", borderRadius: "12px", fontSize: "12px" },
+  actionButton: { padding: "6px 12px", marginRight: "6px", backgroundColor: "#2563eb", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "12px" },
 };
 
 export default Documents;
