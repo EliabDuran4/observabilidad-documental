@@ -28,3 +28,8 @@ export async function rejectDocument(documentId, comment = "") {
   const response = await api.post(`/documents/${documentId}/reject`, { comment });
   return response.data;
 }
+
+export async function analyzeDocument(documentId) {
+  const response = await api.post(`/documents/${documentId}/analyze`);
+  return response.data;
+}

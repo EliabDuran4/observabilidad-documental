@@ -1,3 +1,4 @@
+from app.services.ai_service import analyze_document
 import os
 import uuid
 from datetime import datetime
@@ -109,6 +110,31 @@ def get_document(
     db: Session = Depends(get_db),
 ):
     document = _get_document_or_404(document_id, db, current_user)
+    return _serialize_document(document)
+
+
+@router.post("/{document_id}/analyze")
+def analyze_document_endpoint(
+    document_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Envía el documento a Claude API para generar un análisis."""
+    document = _get_document_or_404(document_id, db, current_user)
+
+    try:
+        analysis_result = analyze_document(document.original_filename)
+    except Exception:
+        raise HTTPException(
+            status_code=502,
+            detail="No se pudo generar el análisis de IA en este momento",
+        )
+
+    document.ai_analysis = analysis_result
+    document.ai_analyzed_at = datetime.utcnow()
+    db.commit()
+    db.refresh(document)
+
     return _serialize_document(document)
 
 
@@ -227,4 +253,6 @@ def _serialize_document(document: Document) -> dict:
         "reviewed_by": document.reviewed_by,
         "reviewed_at": document.reviewed_at.isoformat() if document.reviewed_at else None,
         "review_comment": document.review_comment,
+        "ai_analysis": document.ai_analysis,
+        "ai_analyzed_at": document.ai_analyzed_at.isoformat() if document.ai_analyzed_at else None,
     }

@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     otel_exporter_otlp_endpoint: str = "http://localhost:4317"
     otel_service_name: str = "backend-documental"
 
+    # Claude API
+    anthropic_api_key: str = ""
+
     class Config:
         env_file = ".env"
 

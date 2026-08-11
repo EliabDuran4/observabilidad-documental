@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, String, DateTime
+from sqlalchemy import Column, String, DateTime, Text
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.core.database import Base
@@ -20,3 +20,7 @@ class Document(Base):
     reviewed_by = Column(String, nullable=True)
     reviewed_at = Column(DateTime, nullable=True)
     review_comment = Column(String, nullable=True)
+
+    # Nuevo: resultado del análisis de IA
+    ai_analysis = Column(Text, nullable=True)
+    ai_analyzed_at = Column(DateTime, nullable=True)

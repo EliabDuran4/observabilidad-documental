@@ -6,6 +6,7 @@ import {
   startReview,
   approveDocument,
   rejectDocument,
+  analyzeDocument,
 } from "../services/documentService";
 import { logout } from "../services/authService";
 
@@ -79,6 +80,18 @@ function Documents() {
     }
   };
 
+  const handleAnalyze = async (documentId) => {
+    setError("");
+    setMessage("");
+  try {
+     await analyzeDocument(documentId);
+     setMessage("Análisis generado correctamente");
+     fetchDocuments();
+   }  catch (err) {
+      setError("No se pudo generar el análisis (verifica créditos de la API)");
+   }
+  };
+
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -118,6 +131,7 @@ function Documents() {
                 <th style={styles.th}>Subido por</th>
                 <th style={styles.th}>Revisado por</th>
                 <th style={styles.th}>Acciones</th>
+                <th style={styles.th}>Análisis IA</th>
               </tr>
             </thead>
             <tbody>
@@ -133,6 +147,7 @@ function Documents() {
                     </td>
                     <td style={styles.td}>{doc.uploaded_by}</td>
                     <td style={styles.td}>{doc.reviewed_by || "-"}</td>
+                    <td style={styles.td}>{doc.ai_analysis || "-"}</td>
                     <td style={styles.td}>
                       {doc.status === "recibido" && (
                         <button
@@ -155,6 +170,12 @@ function Documents() {
                             onClick={() => handleAction("reject", doc.id)}
                           >
                             Rechazar
+                          </button>
+                          <button
+                            style={{ ...styles.actionButton, backgroundColor: "#7c3aed" }}
+                            onClick={() => handleAnalyze(doc.id)}
+                          >
+                            Analizar con IA
                           </button>
                         </>
                       )}
