@@ -9,11 +9,13 @@ from pydantic import BaseModel
 from typing import Optional
 
 from app.config import settings
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_role
 from app.core.database import get_db
 from app.core.logging_config import logger
 from app.core.document_states import DocumentStatus
 from app.models.document import Document
+
+from app.services.ai_service import analyze_document, detect_anomalies
 
 router = APIRouter()
 
@@ -102,6 +104,26 @@ def list_documents(
         "documents": [_serialize_document(doc) for doc in documents],
     }
 
+@router.get("/insights/anomalies")
+def get_anomalies(
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    documents = db.query(Document).all()
+    data = [
+        {
+            "filename": d.original_filename,
+            "status": d.status,
+            "uploaded_at": d.uploaded_at.isoformat(),
+            "reviewed_at": d.reviewed_at.isoformat() if d.reviewed_at else None,
+        }
+        for d in documents
+    ]
+    try:
+        result = detect_anomalies(data)
+    except Exception:
+        raise HTTPException(status_code=502, detail="No se pudo generar el análisis de anomalías")
+    return {"anomalies": result}
 
 @router.get("/{document_id}")
 def get_document(
@@ -155,29 +177,22 @@ def start_review(
 def approve_document(
     document_id: str,
     review: ReviewRequest,
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_role("admin_documental")),
     db: Session = Depends(get_db),
 ):
-    """Transición: en_revision -> aprobado"""
     document = _get_document_or_404(document_id, db, current_user)
-    return _transition_status(
-        document, DocumentStatus.APROBADO, current_user, db, review.comment
-    )
+    return _transition_status(document, DocumentStatus.APROBADO, current_user, db, review.comment)
 
 
 @router.post("/{document_id}/reject")
 def reject_document(
     document_id: str,
     review: ReviewRequest,
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_role("admin_documental")),
     db: Session = Depends(get_db),
 ):
-    """Transición: en_revision -> rechazado"""
     document = _get_document_or_404(document_id, db, current_user)
-    return _transition_status(
-        document, DocumentStatus.RECHAZADO, current_user, db, review.comment
-    )
-
+    return _transition_status(document, DocumentStatus.RECHAZADO, current_user, db, review.comment)
 
 # ------------------ Funciones auxiliares ------------------
 
