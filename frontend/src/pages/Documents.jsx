@@ -192,21 +192,21 @@ function Documents() {
 }
 
 const styles = {
-  container: { maxWidth: "900px", margin: "0 auto", padding: "40px 20px", fontFamily: "sans-serif" },
+  container: { maxWidth: "900px", margin: "0 auto", padding: "40px 20px", fontFamily: "sans-serif", color: "#0F172A" },
   header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" },
   logoutButton: { padding: "8px 16px", backgroundColor: "#dc2626", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer" },
-  uploadSection: { backgroundColor: "#f9fafb", padding: "20px", borderRadius: "8px", marginBottom: "30px" },
+  uploadSection: { backgroundColor: "#FFFFFF", padding: "20px", borderRadius: "8px", marginBottom: "30px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" },
   uploadForm: { display: "flex", gap: "10px", alignItems: "center" },
-  uploadButton: { padding: "8px 16px", backgroundColor: "#2563eb", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer" },
+  uploadButton: { padding: "8px 16px", backgroundColor: "#3B82F6", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer" },
   success: { color: "#16a34a", marginTop: "10px" },
   error: { color: "#dc2626", marginTop: "10px" },
-  listSection: { backgroundColor: "#fff" },
+  listSection: { backgroundColor: "#FFFFFF", padding: "20px", borderRadius: "8px", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" },
   empty: { color: "#666" },
   table: { width: "100%", borderCollapse: "collapse" },
-  th: { textAlign: "left", padding: "10px", borderBottom: "2px solid #e5e7eb", fontSize: "13px", color: "#374151" },
-  td: { padding: "10px", borderBottom: "1px solid #e5e7eb", fontSize: "14px" },
+  th: { textAlign: "left", padding: "10px", borderBottom: "2px solid #e5e7eb", fontSize: "13px", color: "#0F172A" },
+  td: { padding: "10px", borderBottom: "1px solid #e5e7eb", fontSize: "14px", color: "#0F172A" },
   badge: { color: "#fff", padding: "4px 10px", borderRadius: "12px", fontSize: "12px" },
-  actionButton: { padding: "6px 12px", marginRight: "6px", backgroundColor: "#2563eb", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "12px" },
+  actionButton: { padding: "6px 12px", marginRight: "6px", backgroundColor: "#3B82F6", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "12px" },
 };
 
 export default Documents;

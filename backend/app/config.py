@@ -14,6 +14,11 @@ class Settings(BaseSettings):
 
     # Base de datos
     database_url: str = "postgresql+pg8000://admin:admin123@localhost:5433/observabilidad_documental_db"
+    database_url_shard1: str = ""
+    database_url_shard2: str = ""
+    database_url_shard1_replica: str = ""
+    database_url_shard2_replica: str = ""
+    shard_year_threshold: int = 2027
 
     # OpenTelemetry
     otel_exporter_otlp_endpoint: str = "http://localhost:4317"

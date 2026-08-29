@@ -5,7 +5,7 @@ from app.routers import documents, auth
 from app.config import settings
 from app.core.logging_config import logger
 from app.core.telemetry import setup_telemetry
-from app.core.database import engine
+from app.core.database import engine_shard1
 
 app = FastAPI(title=settings.app_name)
 
@@ -18,7 +18,7 @@ app.add_middleware(
 )
 
 # Configurar OpenTelemetry (trazas)
-tracer = setup_telemetry(app, engine)
+tracer = setup_telemetry(app, engine_shard1)
 
 app.include_router(auth.router, prefix="/auth", tags=["Autenticación"])
 app.include_router(documents.router, prefix="/documents", tags=["Documentos"])

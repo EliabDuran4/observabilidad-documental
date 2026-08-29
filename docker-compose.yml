@@ -83,6 +83,28 @@ services:
     networks:
       - observabilidad-net
 
+  sqlserver_shard1:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver_shard1
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "TuPassword123!"
+    ports:
+      - "1433:1433"
+    networks:
+      - observabilidad-net
+
+  sqlserver_shard2:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver_shard2
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "TuPassword123!"
+    ports:
+      - "1434:1433"
+    networks:
+      - observabilidad-net
+
   # Backend
   backend:
     build: ./backend
