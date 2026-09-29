@@ -35,6 +35,11 @@ export async function deleteDocument(id) {
   return res.data;
 }
 
+export async function analyzeDocument(id) {
+  const res = await api.post(`/documents/${id}/analyze`);
+  return res.data;
+}
+
 export async function downloadDocument(id, filename) {
   const res = await api.get(`/documents/${id}/download`, { responseType: "blob" });
   const url = window.URL.createObjectURL(new Blob([res.data]));
