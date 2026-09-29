@@ -24,24 +24,24 @@ cerrado en Sprint 0 — no forma parte del backlog activo pendiente de ejecució
 | ID | Épica | Historia | Prioridad | SP | Dependencias | Estado |
 |---|---|---|---|---|---|---|
 | HU01 | EP1 | Como usuario del sistema, quiero iniciar sesión con mi rol, para acceder solo a lo que me corresponde | Alta | 5 | — | Hecho — cerrado en Sprint 0, fuera del backlog activo |
-| HU02 | EP2 | Como usuario documental, quiero subir un documento eligiendo su categoría, para que se almacene en el shard correcto | Alta | 8 | HU01 | En progreso |
-| HU03 | EP2 | Como revisor/admin, quiero ver el listado de documentos consolidando los 4 shards, para tener visión completa | Alta | 5 | HU02 | Pendiente |
-| HU04 | EP1/EP2 | Como usuario documental, quiero ver solo mis propios documentos, para no acceder a información ajena | Alta | 5 | HU03 | Pendiente |
-| HU05 | EP3 | Como revisor documental, quiero comentar un documento y moverlo a revisado o corrección, para filtrar antes de la decisión final | Alta | 8 | HU03 | Pendiente |
-| HU06 | EP3 | Como admin documental, quiero aprobar o rechazar un documento en revisión, para dar la decisión final | Alta | 5 | HU05 | Pendiente |
-| HU07 | EP3 | Como sistema, quiero que un documento aprobado quede de solo lectura, para preservar integridad | Media | 3 | HU06 | Pendiente |
-| HU08 | EP4 | Como usuario, quiero una interfaz web para autenticarme y subir documentos | Alta | 8 | HU01,HU02 | Pendiente |
-| HU09a | EP4 | Como revisor/admin, quiero ver el listado de documentos desde la interfaz | Alta | 5 | HU03,HU04 | Pendiente |
-| HU09b | EP4 | Como revisor/admin, quiero ejecutar acciones de revisión/aprobación desde la interfaz | Alta | 5 | HU05,HU06 | Pendiente |
-| HU10 | EP5 | Como sistema, quiero generar trazas distribuidas de cada operación, para auditar el flujo | Alta | 8 | HU02 | Pendiente |
-| HU11 | EP5 | Como sistema, quiero exponer métricas de uso y rendimiento, para monitorear salud del sistema | Alta | 5 | HU10 | Pendiente |
-| HU12 | EP5 | Como admin, quiero ver dashboards en Grafana, para observar el sistema visualmente | Alta | 5 | HU11 | Pendiente |
-| HU13 | EP5 | Como admin, quiero recibir alertas ante fallos, para reaccionar a tiempo | Media | 3 | HU12 | Pendiente |
-| HU14 | EP6 | Como revisor, quiero un análisis de IA del documento, para apoyar la decisión | Media | 5 | HU02 | Pendiente |
+| HU02 | EP2 | Como usuario documental, quiero subir un documento eligiendo su categoría, para que se almacene en el shard correcto | Alta | 8 | HU01 | Hecho |
+| HU03 | EP2 | Como revisor/admin, quiero ver el listado de documentos consolidando los 4 shards, para tener visión completa | Alta | 5 | HU02 | Hecho |
+| HU04 | EP1/EP2 | Como usuario documental, quiero ver solo mis propios documentos, para no acceder a información ajena | Alta | 5 | HU03 | Hecho |
+| HU05 | EP3 | Como revisor documental, quiero comentar un documento y moverlo a revisado o corrección, para filtrar antes de la decisión final | Alta | 8 | HU03 | Hecho |
+| HU06 | EP3 | Como admin documental, quiero aprobar o rechazar un documento en revisión, para dar la decisión final | Alta | 5 | HU05 | Hecho |
+| HU07 | EP3 | Como sistema, quiero que un documento aprobado quede de solo lectura, para preservar integridad | Media | 3 | HU06 | Hecho |
+| HU08 | EP4 | Como usuario, quiero una interfaz web para autenticarme y subir documentos | Alta | 8 | HU01,HU02 | Hecho |
+| HU09a | EP4 | Como revisor/admin, quiero ver el listado de documentos desde la interfaz | Alta | 5 | HU03,HU04 | Hecho |
+| HU09b | EP4 | Como revisor/admin, quiero ejecutar acciones de revisión/aprobación desde la interfaz | Alta | 5 | HU05,HU06 | Hecho |
+| HU10 | EP5 | Como sistema, quiero generar trazas distribuidas de cada operación, para auditar el flujo | Alta | 8 | HU02 | Hecho |
+| HU11 | EP5 | Como sistema, quiero exponer métricas de uso y rendimiento, para monitorear salud del sistema | Alta | 5 | HU10 | Hecho |
+| HU12 | EP5 | Como admin, quiero ver dashboards en Grafana, para observar el sistema visualmente | Alta | 5 | HU11 | Hecho |
+| HU13 | EP5 | Como admin, quiero recibir alertas ante fallos, para reaccionar a tiempo | Media | 3 | HU12 | Hecho |
+| HU14 | EP6 | Como revisor, quiero un análisis de IA del documento, para apoyar la decisión | Media | 5 | HU02 | Hecho |
 | HU15 | EP6 | Como admin, quiero detectar anomalías en el flujo vía IA, para anticipar problemas | Baja | 5 | HU14,HU03 | Backlog abierto (sin fecha fija) |
-| HU16 | EP7 | Como equipo técnico, quiero un workflow de validación automática en cada push, para detectar errores temprano | Baja | 5 | HU08 | Pendiente |
-| HU17 | EP8 | Como usuario final, quiero manuales técnico y de usuario, para operar el sistema | Media | 5 | Documentará las funcionalidades realmente implementadas de HU02-HU14 y HU16 al cierre del Sprint 2, sin esperar a que absolutamente todo el backlog esté cerrado | Pendiente |
-| HU18 | EP8 | Como equipo técnico, quiero un reporte de pruebas QA, para validar el sistema antes de entrega | Alta | 5 | HU08,HU09a,HU09b,HU10-14 | Pendiente |
+| HU16 | EP7 | Como equipo técnico, quiero un workflow de validación automática en cada push, para detectar errores temprano | Baja | 5 | HU08 | Hecho |
+| HU17 | EP8 | Como usuario final, quiero manuales técnico y de usuario, para operar el sistema | Media | 5 | Documentará las funcionalidades realmente implementadas de HU02-HU14 y HU16 al cierre del Sprint 2, sin esperar a que absolutamente todo el backlog esté cerrado | Hecho|
+| HU18 | EP8 | Como equipo técnico, quiero un reporte de pruebas QA, para validar el sistema antes de entrega | Alta | 5 | HU08,HU09a,HU09b,HU10-14 | Hecho |
 
 ## Definition of Done
 - Código funciona sin errores en entorno Docker local
