@@ -22,7 +22,7 @@ from app.core.database import (
     VALID_CATEGORIES,
 )
 from app.models.document import Document
-from app.services.ai_service import analyze_document
+from app.services.ai_service import analyze_document, AIServiceError
 
 
 router = APIRouter()
@@ -101,8 +101,8 @@ async def upload_document(
         "uploaded_by": current_user["username"],
     }
 
-def _serialize(doc: Document) -> dict:
-    return {
+def _serialize(doc: Document, with_ai: bool = True) -> dict:
+    data = {
         "id": doc.id,
         "original_filename": doc.original_filename,
         "category": doc.category,
@@ -121,6 +121,16 @@ def _serialize(doc: Document) -> dict:
         ),
         "review_comment": doc.review_comment,
     }
+
+    if with_ai:
+        data["ai_analysis"] = doc.ai_analysis
+        data["ai_analyzed_at"] = (
+            doc.ai_analyzed_at.isoformat()
+            if doc.ai_analyzed_at
+            else None
+        )
+
+    return data
 
 @router.get("/")
 def list_documents(
@@ -155,7 +165,7 @@ def list_documents(
     return {
         "total": len(docs),
         "documents": [
-            _serialize(doc)
+            _serialize(doc, with_ai=is_privileged)
             for doc in docs
         ],
     }
@@ -368,7 +378,7 @@ def download_document(
 @router.post("/{document_id}/analyze")
 def analyze(
     document_id: str,
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_reviewer_or_admin),
 ):
     doc, db = _find_document(document_id)
 
@@ -376,18 +386,25 @@ def analyze(
         doc.ai_analysis = analyze_document(
             doc.original_filename,
             doc.category,
+            doc.stored_path,
         )
 
         doc.ai_analyzed_at = datetime.utcnow()
 
         db.commit()
 
-        return _serialize(doc)
+        result = _serialize(doc)
+        result["ai_notice"] = (
+            "Recomendación de IA: no modifica el estado del "
+            "documento y requiere validación humana."
+        )
+        return result
 
-    except Exception:
+    except AIServiceError as e:
+        db.rollback()
         raise HTTPException(
-            status_code=502,
-            detail="No se pudo generar el análisis de IA",
+            status_code=e.status_code,
+            detail=e.message,
         )
 
     finally:

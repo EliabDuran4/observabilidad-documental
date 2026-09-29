@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     otel_service_name: str = "backend-documental"
 
     anthropic_api_key: str = ""
+    anthropic_model: str = "claude-sonnet-5-5"
 
     class Config:
         env_file = ".env"
