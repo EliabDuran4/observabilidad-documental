@@ -8,4 +8,6 @@ frontend/dist/
 frontend/build/
 *.log
 .vscode/
+backend/uploads/Client Secret.md
+Client Secret.md
 backend/uploads/
